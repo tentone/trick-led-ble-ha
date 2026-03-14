@@ -1,14 +1,13 @@
 """BLE communication layer for the Trick LED integration.
 
-All methods in this module are **placeholders**.  The actual byte-level
-protocol will be filled in once the decompiled Android/Java application
-has been analysed.  Every public coroutine is already wired up to the
-rest of the integration so only this file needs to change when the real
-commands are known.
+Protocol details extracted from the decompiled Android application
+(MyBluetoothGatt.java).  All UUIDs and command byte sequences are
+defined in :mod:`const`.
 """
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import TYPE_CHECKING
 
@@ -17,8 +16,11 @@ from bleak.exc import BleakError
 from bleak_retry_connector import establish_connection
 
 from .const import (
+    BLE_CHAR_NOTIFY_UUID,
     BLE_CHAR_WRITE_UUID,
     CMD_BRIGHTNESS_PREFIX,
+    CMD_BRIGHTNESS_SUFFIX,
+    CMD_GET_STATE,
     CMD_TURN_OFF,
     CMD_TURN_ON,
 )
@@ -97,50 +99,65 @@ class TrickLedBleClient:
     # ── Public control API ────────────────────────────────────────────────────
 
     async def turn_on(self) -> None:
-        """Power on the LED strip.
-
-        .. note::
-            Command bytes in :data:`~.const.CMD_TURN_ON` are placeholders.
-        """
+        """Power on the LED strip."""
         await self._write(CMD_TURN_ON)
 
     async def turn_off(self) -> None:
-        """Power off the LED strip.
-
-        .. note::
-            Command bytes in :data:`~.const.CMD_TURN_OFF` are placeholders.
-        """
+        """Power off the LED strip."""
         await self._write(CMD_TURN_OFF)
 
     async def set_brightness(self, brightness: int) -> None:
-        """Set the brightness of the monochromatic LED strip.
+        """Set the brightness of the LED strip.
 
         Args:
             brightness: Desired brightness in the range ``0``–``255``.
-                        ``0`` is the minimum (off/dim), ``255`` is maximum.
+                        ``0`` is minimum (off/dim), ``255`` is maximum.
 
-        .. note::
-            Command format in :data:`~.const.CMD_SET_BRIGHTNESS_FMT` is a
-            placeholder.
+        The wire format is ``0x56 <brightness_byte> 0x00 0x00 0x00 0xF0 0xAA``
+        as extracted from ``MyBluetoothGatt.setColor()`` in the Android app.
         """
         brightness = max(0, min(255, brightness))
-        data = CMD_BRIGHTNESS_PREFIX + bytes([brightness])
+        data = CMD_BRIGHTNESS_PREFIX + bytes([brightness]) + CMD_BRIGHTNESS_SUFFIX
         await self._write(data)
 
     async def poll_state(self) -> TrickLedDeviceState:
         """Query the device for its current state.
 
+        Sends the ``0xEF 0x01 0x77`` state-request command (``getLightData()``
+        in the Android app) and waits for the notification response on
+        :data:`~.const.BLE_CHAR_NOTIFY_UUID`.
+
+        The device replies with an 8- or 12-byte packet whose first byte is
+        ``0x66``.  Byte at index 2 indicates power state: ``0x23`` = ON,
+        ``0x24`` = OFF.  For 12-byte responses bytes 6–8 carry R, G, B values.
+
         Returns:
             A :class:`~.models.TrickLedDeviceState` populated with the values
             read from the device.
-
-        .. note::
-            This is a placeholder implementation that returns a default state.
-            Replace the body with the actual read/notify logic once the protocol
-            is known.
         """
-        # TODO: read state from BLE_CHAR_NOTIFY_UUID and parse the response
         from .models import TrickLedDeviceState  # local import to avoid circulars
 
-        _LOGGER.debug("poll_state called for %s (placeholder)", self._ble_device.address)
-        return TrickLedDeviceState()
+        state = TrickLedDeviceState()
+        event = asyncio.Event()
+
+        def _notification_handler(_: int, data: bytearray) -> None:
+            if len(data) >= 4 and data[0] == 0x66:
+                state.is_on = data[2] == 0x23
+                event.set()
+
+        try:
+            client = await self._connect()
+            await client.start_notify(BLE_CHAR_NOTIFY_UUID, _notification_handler)
+            try:
+                await self._write(CMD_GET_STATE)
+                async with asyncio.timeout(3.0):
+                    await event.wait()
+            finally:
+                await client.stop_notify(BLE_CHAR_NOTIFY_UUID)
+        except (BleakError, TimeoutError):
+            _LOGGER.debug(
+                "poll_state failed for %s, returning cached state",
+                self._ble_device.address,
+            )
+
+        return state
