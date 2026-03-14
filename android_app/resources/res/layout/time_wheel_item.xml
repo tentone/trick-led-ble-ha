@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="200dp"
+    android:minWidth="80dp"
+    android:minHeight="70dp">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true">
+        <TextView
+            android:textSize="28dp"
+            android:textColor="#ffffffff"
+            android:gravity="center_vertical"
+            android:id="@+id/tx_lable1"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:text="24"
+            android:singleLine="true"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"/>
+    </RelativeLayout>
+</RelativeLayout>
