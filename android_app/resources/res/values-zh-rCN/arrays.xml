@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="huancaitype">
+        <item>SM16703</item>
+        <item>TM1804</item>
+        <item>UCS1903</item>
+        <item>WS2811/WS2812</item>
+        <item>WS2801</item>
+        <item>SK6812/XT1511</item>
+        <item>SK6812-RGBW</item>
+        <item>LPD6803/SC6803</item>
+        <item>APA102/SK9822</item>
+        <item>TM1829</item>
+        <item>TM1814</item>
+    </array>
+    <array name="mods">
+        <item>单色渐变</item>
+        <item>单色呼吸</item>
+        <item>单色频闪</item>
+        <item>单色跳变</item>
+        <item>AUTO</item>
+    </array>
+    <array name="qicaiset2">
+        <item>RGBW</item>
+        <item>RGB</item>
+    </array>
+    <array name="rgb">
+        <item>RGB</item>
+        <item>RBG</item>
+        <item>GRB</item>
+        <item>GBR</item>
+        <item>BRG</item>
+        <item>BGR</item>
+    </array>
+    <array name="rgb2">
+        <item>RGB</item>
+        <item>RBG</item>
+        <item>GRB</item>
+        <item>GBR</item>
+        <item>BRG</item>
+        <item>BGR</item>
+    </array>
+    <array name="xuanhuan">
+        <item>单一循环</item>
+        <item>顺序循环</item>
+        <item>随机循环</item>
+    </array>
+</resources>
