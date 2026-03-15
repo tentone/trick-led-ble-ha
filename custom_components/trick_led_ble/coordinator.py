@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from datetime import timedelta
 
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .bluetooth import TrickLedBleClient
@@ -67,3 +67,36 @@ class TrickLedCoordinator(DataUpdateCoordinator[TrickLedDeviceState]):
 
         self.device_info.state = state
         return state
+
+    async def async_start_notifications(self) -> None:
+        """Subscribe to persistent BLE notifications for real-time state updates.
+
+        Once started, any state change sent by the device (e.g. triggered by a
+        physical remote) will immediately update the entity state in Home
+        Assistant without waiting for the next polling cycle.
+        """
+        await self.ble_client.start_notifications(self._handle_state_notification)
+        _LOGGER.debug(
+            "Persistent BLE notifications started for %s",
+            self.device_info.address,
+        )
+
+    @callback
+    def _handle_state_notification(self, state: TrickLedDeviceState) -> None:
+        """Handle an unsolicited state notification from the device.
+
+        Called by :class:`~.bluetooth.TrickLedBleClient` whenever the device
+        pushes a notification – for example when a physical remote turns the
+        strip on or off.  Updates the cached state and notifies all HA
+        listeners immediately.
+
+        Args:
+            state: The new device state parsed from the BLE notification.
+        """
+        _LOGGER.debug(
+            "Received state notification from %s: is_on=%s",
+            self.device_info.address,
+            state.is_on,
+        )
+        self.device_info.state = state
+        self.async_set_updated_data(state)
