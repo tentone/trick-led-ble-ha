@@ -12,12 +12,6 @@ DEFAULT_NAME = "Trick LED"
 # Manufacturer identifier
 MANUFACTURER = "Trick LED"
 
-# ── BLE GATT UUIDs ────────────────────────────────────────────────────────────
-# Extracted from the decompiled Android application (DeviceUUID.java):
-#   CONSMART_BLE_NOTIFICATION_SERVICE_WRGB_UUID
-#   CONSMART_BLE_NOTIFICATION_CHARACTERISTICS_WRGB_UUID
-#   CONSMART_BLE_NOTIFICATION_CHARACTERISTICS_DATA_UUID
-
 # Primary service that carries LED control characteristics
 BLE_SERVICE_UUID: str = "0000ffd5-0000-1000-8000-00805f9b34fb"
 
@@ -26,9 +20,6 @@ BLE_CHAR_WRITE_UUID: str = "0000ffd9-0000-1000-8000-00805f9b34fb"
 
 # Notify/read characteristic used to receive state updates from the device
 BLE_CHAR_NOTIFY_UUID: str = "0000ffd4-0000-1000-8000-00805f9b34fb"
-
-# ── Command byte sequences ─────────────────────────────────────────────────────
-# Extracted from MyBluetoothGatt.java (openLight / setColor methods).
 
 # Command to turn the strip on  (openLight(true)  → {-52, 35, 51})
 CMD_TURN_ON: bytes = b"\xcc\x23\x33"
