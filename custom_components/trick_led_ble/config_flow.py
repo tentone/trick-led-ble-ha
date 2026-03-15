@@ -53,8 +53,7 @@ class TrickLedConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Handle a device discovered via Bluetooth.
 
-        Called by Home Assistant when an advertising device matches the
-        ``bluetooth`` patterns declared in ``manifest.json``.
+        Called by Home Assistant when an advertising device matches the  ``bluetooth`` patterns declared in ``manifest.json``.
         """
         _LOGGER.debug(
             "Bluetooth discovery: name=%s address=%s",
@@ -101,9 +100,9 @@ class TrickLedConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Handle the initial user step.
 
-        If previously-discovered devices are available the user is presented
-        with a picker; otherwise they are asked to enter a MAC address
-        directly.
+        If previously-discovered devices are available the user is presented  with a picker;
+        
+        otherwise they are asked to enter a MAC address directly.
         """
         if user_input is not None:
             address = user_input[CONF_ADDRESS].strip().upper()

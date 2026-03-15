@@ -60,10 +60,9 @@ class TrickLedBleClient:
     async def _connect(self) -> BleakClient:
         """Return a connected :class:`BleakClient`, establishing one if needed.
 
-        Uses :func:`bleak_retry_connector.establish_connection` which handles
-        reconnection retries transparently.  When persistent notifications are
-        active and a new connection is established, the subscription is
-        automatically restarted on the fresh client.
+        Uses :func:`bleak_retry_connector.establish_connection` which handles reconnection retries transparently.
+        
+        When persistent notifications are active and a new connection is established, the subscription is automatically restarted on the fresh client.
         """
         if self._client is None or not self._client.is_connected:
             self._client = await establish_connection(
@@ -100,16 +99,15 @@ class TrickLedBleClient:
     def _handle_notification(self, _: int, data: bytearray) -> None:
         """Unified handler for all BLE notifications from the device.
 
-        Called by bleak on the asyncio event loop thread, so access to shared
-        state is safe without additional locking.
+        Called by bleak on the asyncio event loop thread, so access to shared  state is safe without additional locking.
 
         Parses the device state packet and:
 
         * Signals any in-progress :meth:`poll_state` call via
           ``_pending_poll_event``.
-        * Calls the persistent ``_state_change_callback`` (if registered) so
-          that the coordinator can push the new state to Home Assistant
-          immediately – e.g. when the remote changes the power state.
+        * Calls the persistent ``_state_change_callback`` (if registered) so that the coordinator can push the new state to Home Assistant  immediately
+        
+        e.g. when the remote changes the power state.
 
         The device notification format (extracted from the Android app):
         * Byte 0: ``0x66`` – packet header / magic byte
@@ -141,22 +139,21 @@ class TrickLedBleClient:
     ) -> None:
         """Subscribe persistently to device state notifications.
 
-        Once started, the device will push state updates to *callback*
-        whenever its power state changes – for example when a physical remote
-        is used.  The subscription is automatically re-established after a
-        reconnection.
+        Once started, the device will push state updates to *callback* whenever its power state changes
+        
+        for example when a physical remote is used.
+        
+        The subscription is automatically re-established after a reconnection.
 
         Args:
             callback: Invoked with the new :class:`~.models.TrickLedDeviceState`
                       each time the device sends a notification.
         """
         self._state_change_callback = callback
-        # Connect first (with _notifications_active still False so _connect()
-        # does not attempt an early re-subscribe on this initial call).
+        # Connect first (with _notifications_active still False so _connect() does not attempt an early re-subscribe on this initial call).
         client = await self._connect()
         await client.start_notify(BLE_CHAR_NOTIFY_UUID, self._handle_notification)
-        # Mark active only after the subscription succeeds so that any
-        # reconnection in _connect() also correctly re-subscribes.
+        # Mark active only after the subscription succeeds so that any reconnection in _connect() also correctly re-subscribes.
         self._notifications_active = True
         _LOGGER.debug(
             "Started persistent notifications for %s", self._ble_device.address
@@ -165,8 +162,7 @@ class TrickLedBleClient:
     async def stop_notifications(self) -> None:
         """Unsubscribe from device state notifications.
 
-        Safe to call even if notifications were never started or if the device
-        is already disconnected.
+        Safe to call even if notifications were never started or if the device is already disconnected.
         """
         self._state_change_callback = None
         self._notifications_active = False
@@ -226,7 +222,6 @@ class TrickLedBleClient:
                         ``0`` is minimum (off/dim), ``255`` is maximum.
 
         The wire format is ``0x56 <brightness_byte> 0x00 0x00 0x00 0xF0 0xAA``
-        as extracted from ``MyBluetoothGatt.setColor()`` in the Android app.
         """
         brightness = max(0, min(255, brightness))
         data = CMD_BRIGHTNESS_PREFIX + bytes([brightness]) + CMD_BRIGHTNESS_SUFFIX
@@ -235,16 +230,16 @@ class TrickLedBleClient:
     async def poll_state(self) -> TrickLedDeviceState:
         """Query the device for its current state.
 
-        Sends the ``0xEF 0x01 0x77`` state-request command (``getLightData()``
-        in the Android app) and waits for the notification response on
-        :data:`~.const.BLE_CHAR_NOTIFY_UUID`.
+        Sends the ``0xEF 0x01 0x77`` state-request command and waits for the notification response on :data:`~.const.BLE_CHAR_NOTIFY_UUID`.
 
         The device replies with an 8- or 12-byte packet whose first byte is
-        ``0x66``.  Byte at index 2 indicates power state: ``0x23`` = ON,
-        ``0x24`` = OFF.  For 12-byte responses bytes 6–8 carry R, G, B values.
+        ``0x66``.  Byte at index 2 indicates power state:
+        ``0x23`` = ON,
+        ``0x24`` = OFF.
+        
+        For 12-byte responses bytes 6–8 carry R, G, B values.
 
-        When persistent notifications are already active the existing
-        subscription is reused and no double-subscribe is attempted.
+        When persistent notifications are already active the existing subscription is reused and no double-subscribe is attempted.
 
         Returns:
             A :class:`~.models.TrickLedDeviceState` populated with the values

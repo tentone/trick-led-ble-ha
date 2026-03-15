@@ -30,10 +30,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     Steps:
     1. Resolve the BLE device object from the stored MAC address.
     2. Build a :class:`~.bluetooth.TrickLedBleClient` for low-level comms.
-    3. Create a :class:`~.coordinator.TrickLedCoordinator` and do an initial
-       data fetch so we know the device is reachable before finishing setup.
-    4. Store the coordinator in ``hass.data`` so platform modules can access
-       it during entity registration.
+    3. Create a :class:`~.coordinator.TrickLedCoordinator` and do an initial  data fetch so we know the device is reachable before finishing setup.
+    4. Store the coordinator in ``hass.data`` so platform modules can access it during entity registration.
     5. Forward setup to all declared platforms (currently only ``light``).
     """
     address: str = entry.data[CONF_ADDRESS]
@@ -52,12 +50,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     ble_client = TrickLedBleClient(ble_device)
     coordinator = TrickLedCoordinator(hass, device_info, ble_client)
 
-    # Perform first refresh – raises ConfigEntryNotReady on failure so HA
-    # will retry until the device comes online
+    # Perform first refresh – raises ConfigEntryNotReady on failure so HA will retry until the device comes online
     await coordinator.async_config_entry_first_refresh()
 
-    # Subscribe to persistent BLE notifications so state changes triggered by
-    # a physical remote are reflected in Home Assistant immediately.
+    # Subscribe to persistent BLE notifications so state changes triggered by a physical remote are reflected in Home Assistant immediately.
     await coordinator.async_start_notifications()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator

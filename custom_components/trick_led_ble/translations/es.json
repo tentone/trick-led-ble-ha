@@ -1,0 +1,24 @@
+{
+    "config": {
+      "step": {
+        "user": {
+          "title": "Configurar Trick LED BLE",
+          "description": "Introduce la dirección MAC Bluetooth de tu dispositivo Trick LED.",
+          "data": {
+            "address": "Dirección MAC"
+          }
+        },
+        "bluetooth_confirm": {
+          "title": "Confirmar Trick LED BLE",
+          "description": "¿Quieres configurar **{name}** ({address})?"
+        }
+      },
+      "abort": {
+        "already_configured": "Este dispositivo ya está configurado.",
+        "no_devices_found": "No se encontraron dispositivos Trick LED cercanos."
+      },
+      "error": {
+        "cannot_connect": "No se pudo conectar al dispositivo. Asegúrate de que esté encendido y dentro del alcance."
+      }
+    }
+  }

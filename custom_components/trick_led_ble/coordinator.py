@@ -48,8 +48,7 @@ class TrickLedCoordinator(DataUpdateCoordinator[TrickLedDeviceState]):
     async def _async_update_data(self) -> TrickLedDeviceState:
         """Fetch the latest state from the device.
 
-        Called automatically by the base class every *update_interval* seconds
-        and also manually when an entity triggers a state refresh.
+        Called automatically by the base class every *update_interval* seconds and also manually when an entity triggers a state refresh.
 
         Returns:
             The current :class:`~.models.TrickLedDeviceState`.
@@ -71,9 +70,9 @@ class TrickLedCoordinator(DataUpdateCoordinator[TrickLedDeviceState]):
     async def async_start_notifications(self) -> None:
         """Subscribe to persistent BLE notifications for real-time state updates.
 
-        Once started, any state change sent by the device (e.g. triggered by a
-        physical remote) will immediately update the entity state in Home
-        Assistant without waiting for the next polling cycle.
+        Once started, any state change sent by the device (e.g. triggered by a  physical remote)
+        
+        Will immediately update the entity state in Home Assistant without waiting for the next polling cycle.
         """
         await self.ble_client.start_notifications(self._handle_state_notification)
         _LOGGER.debug(
@@ -85,10 +84,11 @@ class TrickLedCoordinator(DataUpdateCoordinator[TrickLedDeviceState]):
     def _handle_state_notification(self, state: TrickLedDeviceState) -> None:
         """Handle an unsolicited state notification from the device.
 
-        Called by :class:`~.bluetooth.TrickLedBleClient` whenever the device
-        pushes a notification – for example when a physical remote turns the
-        strip on or off.  Updates the cached state and notifies all HA
-        listeners immediately.
+        Called by :class:`~.bluetooth.TrickLedBleClient` whenever the device pushes a notification
+        
+        For example when a physical remote turns the strip on or off. 
+        
+        Updates the cached state and notifies all HA listeners immediately.
 
         Args:
             state: The new device state parsed from the BLE notification.
