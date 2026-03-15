@@ -56,6 +56,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # will retry until the device comes online
     await coordinator.async_config_entry_first_refresh()
 
+    # Subscribe to persistent BLE notifications so state changes triggered by
+    # a physical remote are reflected in Home Assistant immediately.
+    await coordinator.async_start_notifications()
+
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -71,6 +75,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if unloaded:
         coordinator: TrickLedCoordinator = hass.data[DOMAIN].pop(entry.entry_id)
+        await coordinator.ble_client.stop_notifications()
         await coordinator.ble_client.disconnect()
 
     return unloaded
